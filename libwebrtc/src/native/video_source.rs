@@ -50,12 +50,11 @@ struct VideoSourceInner {
 }
 
 impl NativeVideoSource {
-    pub fn new(resolution: VideoResolution, is_screencast: bool) -> NativeVideoSource {
+    pub fn new(resolution: VideoResolution) -> NativeVideoSource {
         let source = Self {
-            sys_handle: vt_sys::ffi::new_video_track_source(
-                &vt_sys::ffi::VideoResolution::from(resolution.clone()),
-                is_screencast,
-            ),
+            sys_handle: vt_sys::ffi::new_video_track_source(&vt_sys::ffi::VideoResolution::from(
+                resolution.clone(),
+            )),
             inner: Arc::new(Mutex::new(VideoSourceInner { captured_frames: 0 })),
         };
 
@@ -113,5 +112,9 @@ impl NativeVideoSource {
 
     pub fn video_resolution(&self) -> VideoResolution {
         self.sys_handle.video_resolution().into()
+    }
+
+    pub fn set_is_screencast(&self, is_screencast: bool) {
+        self.sys_handle.set_is_screencast(is_screencast);
     }
 }

@@ -105,16 +105,19 @@ std::shared_ptr<NativeVideoSink> new_native_video_sink(
 }
 
 VideoTrackSource::InternalSource::InternalSource(
-    const VideoResolution& resolution,
-    bool is_screencast)
-    : rtc::AdaptedVideoTrackSource(4),
-      resolution_(resolution),
-      is_screencast_(is_screencast) {}
+    const VideoResolution& resolution)
+    : rtc::AdaptedVideoTrackSource(4), resolution_(resolution) {}
 
 VideoTrackSource::InternalSource::~InternalSource() {}
 
 bool VideoTrackSource::InternalSource::is_screencast() const {
+  webrtc::MutexLock lock(&mutex_);
   return is_screencast_;
+}
+
+void VideoTrackSource::InternalSource::set_is_screencast(bool is_screencast) {
+  webrtc::MutexLock lock(&mutex_);
+  is_screencast_ = is_screencast;
 }
 
 absl::optional<bool> VideoTrackSource::InternalSource::needs_denoising() const {
@@ -178,9 +181,8 @@ bool VideoTrackSource::InternalSource::on_captured_frame(
   return true;
 }
 
-VideoTrackSource::VideoTrackSource(const VideoResolution& resolution,
-                                   bool is_screencast) {
-  source_ = rtc::make_ref_counted<InternalSource>(resolution, is_screencast);
+VideoTrackSource::VideoTrackSource(const VideoResolution& resolution) {
+  source_ = rtc::make_ref_counted<InternalSource>(resolution);
 }
 
 VideoResolution VideoTrackSource::video_resolution() const {
@@ -193,15 +195,18 @@ bool VideoTrackSource::on_captured_frame(
   return source_->on_captured_frame(rtc_frame);
 }
 
+void VideoTrackSource::set_is_screencast(bool is_screencast) const {
+  source_->set_is_screencast(is_screencast);
+}
+
 rtc::scoped_refptr<VideoTrackSource::InternalSource> VideoTrackSource::get()
     const {
   return source_;
 }
 
 std::shared_ptr<VideoTrackSource> new_video_track_source(
-    const VideoResolution& resolution,
-    bool is_screencast) {
-  return std::make_shared<VideoTrackSource>(resolution, is_screencast);
+    const VideoResolution& resolution) {
+  return std::make_shared<VideoTrackSource>(resolution);
 }
 
 }  // namespace livekit

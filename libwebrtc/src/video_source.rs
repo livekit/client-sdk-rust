@@ -36,6 +36,10 @@ impl RtcVideoSource {
         [Native];
         pub fn video_resolution(self: &Self) -> VideoResolution;
     );
+    enum_dispatch!(
+        [Native];
+        pub fn set_is_screencast(self: &Self, is_screencast: bool);
+    );
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -58,13 +62,13 @@ pub mod native {
 
     impl Default for NativeVideoSource {
         fn default() -> Self {
-            Self::new(VideoResolution::default(), false)
+            Self::new(VideoResolution::default())
         }
     }
 
     impl NativeVideoSource {
-        pub fn new(resolution: VideoResolution, is_screencast: bool) -> Self {
-            Self { handle: vs_imp::NativeVideoSource::new(resolution, is_screencast) }
+        pub fn new(resolution: VideoResolution) -> Self {
+            Self { handle: vs_imp::NativeVideoSource::new(resolution) }
         }
 
         pub fn capture_frame<T: AsRef<dyn VideoBuffer>>(&self, frame: &VideoFrame<T>) {
@@ -73,6 +77,10 @@ pub mod native {
 
         pub fn video_resolution(&self) -> VideoResolution {
             self.handle.video_resolution()
+        }
+
+        pub fn set_is_screencast(&self, is_screencast: bool) {
+            self.handle.set_is_screencast(is_screencast)
         }
     }
 }

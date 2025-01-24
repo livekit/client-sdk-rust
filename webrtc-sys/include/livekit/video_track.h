@@ -91,7 +91,7 @@ class VideoTrackSource {
      * resolution set to (0, 0) means no resolution/optional, the source will
      * guess the resolution at the first captured frame.
      */
-    InternalSource(const VideoResolution& resolution, bool is_screencast);
+    InternalSource(const VideoResolution& resolution);
     ~InternalSource() override;
 
     bool is_screencast() const override;
@@ -100,6 +100,7 @@ class VideoTrackSource {
     bool remote() const override;
     VideoResolution video_resolution() const;
     bool on_captured_frame(const webrtc::VideoFrame& frame);
+    void set_is_screencast(bool is_screencast);
 
    private:
     mutable webrtc::Mutex mutex_;
@@ -109,7 +110,7 @@ class VideoTrackSource {
   };
 
  public:
-  VideoTrackSource(const VideoResolution& resolution, bool is_screencast);
+  VideoTrackSource(const VideoResolution& resolution);
 
   VideoResolution video_resolution() const;
 
@@ -118,13 +119,14 @@ class VideoTrackSource {
 
   rtc::scoped_refptr<InternalSource> get() const;
 
+  void set_is_screencast(bool is_screencast) const;
+
  private:
   rtc::scoped_refptr<InternalSource> source_;
 };
 
 std::shared_ptr<VideoTrackSource> new_video_track_source(
-    const VideoResolution& resolution,
-    bool is_screencast);
+    const VideoResolution& resolution);
 
 static std::shared_ptr<MediaStreamTrack> video_to_media(
     std::shared_ptr<VideoTrack> track) {
